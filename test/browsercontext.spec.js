@@ -15,6 +15,7 @@
  */
 
 const utils = require('./utils');
+const GoldenUtils = require('./golden-utils');
 
 module.exports.addTests = function({testRunner, expect, puppeteer}) {
   const {describe, xdescribe, fdescribe} = testRunner;
@@ -129,6 +130,18 @@ module.exports.addTests = function({testRunner, expect, puppeteer}) {
       expect(contexts.length).toBe(2);
       await remoteBrowser.disconnect();
       await context.close();
+    });
+    it('should render fonts the same in headless and browser mode', async() => {
+      const createScreenshot = async(headless, path) => {
+        const browser = await puppeteer.launch({ headless }); // toggle to false
+        const page = await browser.newPage();
+        await page.goto('file:///tmp/test.html'); // TODO: Use the right asset
+        await page.waitFor(5000);
+        await page.screenshot({ path });
+        await browser.close();
+      };
+      await createScreenshot(true, '/tmp/headless.png');
+      await createScreenshot(false, '/tmp/browser.png');
     });
   });
 };
